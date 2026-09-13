@@ -1,0 +1,11 @@
+README.md
+setup.py
+veritasai/__init__.py
+veritasai/client.py
+veritasai/decorators.py
+veritasai/exceptions.py
+veritasai/models.py
+veritasai.egg-info/PKG-INFO
+veritasai.egg-info/SOURCES.txt
+veritasai.egg-info/dependency_links.txt
+veritasai.egg-info/top_level.txt

@@ -1,68 +1,124 @@
 /**
- * Event routes — record, list, get, and verify evidence events.
+ * Event routes — record, list, get, and verify evidence events with tenant isolation.
  */
 import { Router, type Request, type Response } from "express";
 import { recordEvent, verifyReceipt } from "../services/coolClient.js";
 import {
   saveReceipt,
+  saveDecision,
   getEvent,
   listEvents,
   updateEventVerdict,
+  getAgent,
+  ensureDefaultOrganization,
+  createAuditLog,
+  getEventCausalChain,
 } from "../services/db.js";
+import {
+  createSelectiveDisclosureProof,
+  verifySelectiveDisclosureProof,
+  type SelectiveCommitmentPackage,
+} from "../services/cryptography/index.js";
+import { combinedAuth } from "../middleware/tenantAuth.js";
 
 const router = Router();
 
 /**
  * POST /api/v1/events
- * Record a new evidence event.
+ * Record a new evidence event with full action chain and provenance support.
  */
-router.post("/", async (req: Request, res: Response) => {
+router.post("/", combinedAuth, async (req: Request, res: Response) => {
   try {
-    const { agentId, eventType, metadata, payloads } = req.body;
+    const {
+      agentId,
+      eventType,
+      metadata,
+      payloads,
+      decision,
+      riskLevel,
+      parentEventId,
+      actionChain,
+      policyProof,
+      humanApproval,
+      modelProvenance,
+      toolCalls,
+    } = req.body;
 
     if (!agentId || !eventType) {
       res.status(400).json({
         error: "agentId and eventType are required",
+        requestId: req.requestId,
       });
       return;
     }
 
+    const orgId = req.orgId || (await ensureDefaultOrganization()).id;
     const meta = metadata ?? {};
     const pay = payloads ?? {};
 
     let event;
     try {
       const { evidence } = await recordEvent(eventType, meta, pay);
-      event = await saveReceipt(agentId, eventType, evidence, "recorded");
-    } catch (err) {
-      // Fail-safe: recording failed, but we still create the event record
-      event = await saveReceipt(
+      event = await saveDecision({
+        orgId,
         agentId,
         eventType,
-        null,
-        "recording_failed",
-        String(err)
-      );
+        decision: decision || (meta as any).decision || (pay as any).decision || null,
+        riskLevel: riskLevel || "LOW",
+        inputData: pay,
+        outputData: meta,
+        metadata: meta,
+        requestId: req.requestId,
+        receipt: evidence,
+        status: "recorded",
+        parentEventId,
+        actionChain,
+        policyProof,
+        humanApproval,
+        modelProvenance,
+        toolCalls,
+      });
+    } catch (err) {
+      // Fail-safe: recording failed, but we still create the event record
+      event = await saveDecision({
+        orgId,
+        agentId,
+        eventType,
+        decision: decision || null,
+        riskLevel: riskLevel || "LOW",
+        inputData: pay,
+        outputData: meta,
+        metadata: meta,
+        requestId: req.requestId,
+        receipt: null,
+        status: "recording_failed",
+        errorDetail: String(err),
+      });
     }
 
     res.status(201).json(event);
   } catch (err) {
     console.error("[VeritasAI] POST /events error:", err);
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ error: "Internal server error", requestId: req.requestId });
   }
 });
 
 /**
  * GET /api/v1/events
- * List events with optional filters and pagination.
+ * List events with multi-tenant filtering and pagination.
  */
-router.get("/", async (req: Request, res: Response) => {
+router.get("/", combinedAuth, async (req: Request, res: Response) => {
   try {
-    const { agentId, eventType, page, limit, from, to } = req.query;
+    const { agentId, eventType, status, riskLevel, search, page, limit, from, to } = req.query;
+    const orgId = req.orgId || (await ensureDefaultOrganization()).id;
 
     const result = await listEvents({
+      orgId,
       agentId: agentId as string | undefined,
       eventType: eventType as string | undefined,
+      status: status as string | undefined,
+      riskLevel: riskLevel as string | undefined,
+      search: search as string | undefined,
       from: from as string | undefined,
       to: to as string | undefined,
       page: page ? parseInt(page as string, 10) : undefined,
@@ -72,25 +128,27 @@ router.get("/", async (req: Request, res: Response) => {
     res.json(result);
   } catch (err) {
     console.error("[VeritasAI] GET /events error:", err);
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ error: "Internal server error", requestId: req.requestId });
   }
 });
 
 /**
  * GET /api/v1/events/:id
- * Get a single event with its full receipt.
+ * Get a single event with full receipt and tenant verification.
  */
-router.get("/:id", async (req: Request, res: Response) => {
+router.get("/:id", combinedAuth, async (req: Request, res: Response) => {
   try {
-    const event = await getEvent(req.params.id);
+    const orgId = req.orgId;
+    const eventId = String(req.params.id);
+    const event = await getEvent(eventId, orgId);
     if (!event) {
-      res.status(404).json({ error: "Event not found" });
+      res.status(404).json({ error: "Event not found or unauthorized", requestId: req.requestId });
       return;
     }
     res.json(event);
   } catch (err) {
     console.error("[VeritasAI] GET /events/:id error:", err);
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ error: "Internal server error", requestId: req.requestId });
   }
 });
 
@@ -98,20 +156,22 @@ router.get("/:id", async (req: Request, res: Response) => {
  * POST /api/v1/events/:id/verify
  * Re-run verifyEvidence() against the stored receipt, cache + return the verdict.
  */
-router.post("/:id/verify", async (req: Request, res: Response) => {
+router.post("/:id/verify", combinedAuth, async (req: Request, res: Response) => {
   try {
-    const event = await getEvent(req.params.id);
+    const orgId = req.orgId;
+    const eventId = String(req.params.id);
+    const event = await getEvent(eventId, orgId);
     if (!event) {
-      res.status(404).json({ error: "Event not found" });
+      res.status(404).json({ error: "Event not found or unauthorized", requestId: req.requestId });
       return;
     }
 
     if (event.status === "recording_failed" || !event.receiptJson) {
       res.status(400).json({
-        error:
-          "Cannot verify: this event has no receipt (recording failed)",
+        error: "Cannot verify: this event has no receipt (recording failed)",
         status: event.status,
         errorDetail: event.errorDetail,
+        requestId: req.requestId,
       });
       return;
     }
@@ -119,14 +179,112 @@ router.post("/:id/verify", async (req: Request, res: Response) => {
     const verdict = await verifyReceipt(event.receiptJson);
     const updatedEvent = await updateEventVerdict(event.id, verdict);
 
+    // Audit trail record for verification action
+    const currentOrgId = orgId || event.orgId || (await ensureDefaultOrganization()).id;
+    createAuditLog(
+      currentOrgId,
+      verdict.ok ? "EVIDENCE_VERIFIED" : "VERIFICATION_FAILED",
+      "EVIDENCE",
+      event.id,
+      req.user?.userId,
+      {
+        eventType: event.eventType,
+        decision: event.decision,
+        verdictOk: verdict.ok,
+        keyBinding: verdict.checks?.binding?.status,
+        signature: verdict.checks?.signature?.status,
+        inclusion: verdict.checks?.inclusion?.status,
+        hardwareAttestation: verdict.checks?.attestation?.status,
+      }
+    ).catch((e) => console.warn("[VeritasAI] Verification audit logging skipped:", e));
+
     res.json({
       eventId: event.id,
       verdict,
       verifiedAt: updatedEvent?.verifiedAt,
+      requestId: req.requestId,
     });
   } catch (err) {
     console.error("[VeritasAI] POST /events/:id/verify error:", err);
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ error: "Internal server error", requestId: req.requestId });
+  }
+});
+
+/**
+ * GET /api/v1/events/:id/causal-chain
+ * Returns the DAG of parent and predecessor events leading to this action.
+ */
+router.get("/:id/causal-chain", combinedAuth, async (req: Request, res: Response) => {
+  try {
+    const chain = await getEventCausalChain(String(req.params.id), req.orgId);
+    res.json({
+      eventId: req.params.id,
+      causalChainLength: chain.length,
+      events: chain,
+      requestId: req.requestId,
+    });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch causal chain", requestId: req.requestId });
+  }
+});
+
+/**
+ * POST /api/v1/events/:id/selective-disclosure
+ * Generates a zero-knowledge style selective disclosure certificate disclosing ONLY selected fields.
+ */
+router.post("/:id/selective-disclosure", combinedAuth, async (req: Request, res: Response) => {
+  try {
+    const event = await getEvent(String(req.params.id), req.orgId);
+    if (!event) {
+      res.status(404).json({ error: "Event not found", requestId: req.requestId });
+      return;
+    }
+
+    const selectedFields = req.body.selectedFields as string[];
+    if (!Array.isArray(selectedFields) || selectedFields.length === 0) {
+      res.status(400).json({ error: "selectedFields array is required", requestId: req.requestId });
+      return;
+    }
+
+    const inputData = (event.inputJson as Record<string, unknown>) || {};
+    const commitmentsPackage = event.selectiveCommitments as SelectiveCommitmentPackage;
+
+    if (!commitmentsPackage) {
+      res.status(400).json({ error: "Selective commitments not found for this event", requestId: req.requestId });
+      return;
+    }
+
+    const proof = createSelectiveDisclosureProof(inputData, commitmentsPackage, selectedFields);
+    res.json({
+      eventId: event.id,
+      proof,
+      requestId: req.requestId,
+    });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to generate selective disclosure", requestId: req.requestId });
+  }
+});
+
+/**
+ * POST /api/v1/events/verify-selective-proof
+ * Verifies any selective disclosure proof offline.
+ */
+router.post("/verify-selective-proof", async (req: Request, res: Response) => {
+  try {
+    const { proof } = req.body;
+    if (!proof) {
+      res.status(400).json({ error: "proof object is required", requestId: req.requestId });
+      return;
+    }
+
+    const result = verifySelectiveDisclosureProof(proof);
+    res.json({
+      ...result,
+      verifiedAt: new Date().toISOString(),
+      requestId: req.requestId,
+    });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to verify selective proof", requestId: req.requestId });
   }
 });
 

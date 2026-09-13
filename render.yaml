@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: veritasai-backend
+    runtime: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm install && npx prisma db push && npm run build
+    startCommand: npm run start
+    envVars:
+      - key: NODE_VERSION
+        value: 22.16.0
+      - key: PORT
+        value: 10000
+      - key: DATABASE_URL
+        value: file:./dev.db
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ADMIN_PASSWORD
+        value: veritasai-admin
+      - key: COOL_APPLICATION_ID
+        value: veritasai
+      - key: ENCRYPTION_KEY
+        generateValue: true

@@ -2,17 +2,18 @@
  * Demo routes — generates mock events for the flagship M4 scenario.
  */
 import { Router, type Request, type Response } from "express";
-import { createAgent, getAgentByApiKey, saveReceipt } from "../services/db.js";
+import { createAgent, getAgentByApiKey, saveReceipt, ensureDefaultOrganization, createAuditLog } from "../services/db.js";
 import { recordEvent } from "../services/coolClient.js";
 
 const router = Router();
 
 router.post("/seed", async (_req: Request, res: Response) => {
   try {
+    const org = await ensureDefaultOrganization();
     let agent = await getAgentByApiKey("demo-agent-key");
     if (!agent) {
-      agent = await createAgent("LoanBot v2.1");
-      // Force the apiKey to something known for idempotency (though createAgent randomizes it, we just fetch it back)
+      const res = await createAgent(org.id, { name: "LoanBot v2.1", type: "LOAN_APPROVAL" });
+      agent = res.agent;
     }
 
     const events = [];
@@ -63,6 +64,19 @@ router.post("/seed", async (_req: Request, res: Response) => {
     } catch (e) {
       console.error(e);
     }
+
+    // Record audit log for demo simulation
+    await createAuditLog(
+      org.id,
+      "DEMO_SIMULATION_SEEDED",
+      "ORGANIZATION",
+      org.id,
+      undefined,
+      {
+        scenarioCount: events.length,
+        scenarios: ["Loan #8421 (Rejected)", "Loan #8422 (Approved)", "Refund Timeout (Fail-Safe)", "Cardiology Triage"],
+      }
+    ).catch((e) => console.warn("[VeritasAI] Demo audit log skipped:", e));
 
     res.json({
       message: "Generated 4 demo events (including 1 deliberate failure).",

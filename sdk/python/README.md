@@ -1,0 +1,62 @@
+# VeritasAI Python SDK
+
+Cryptographic Evidence, Audit & Observability for Enterprise AI Agents.
+
+---
+
+## Installation
+
+```bash
+pip install veritasai
+```
+
+*(Or for local development: `pip install -e ./sdk/python`)*
+
+---
+
+## 30-Second Quickstart
+
+```python
+from veritasai import VeritasAI
+
+# 1. Initialize with your agent's API key
+client = VeritasAI(
+    api_key="vra_live_xxxxxxxxxxxxxxxxxxxxxxxx",
+    base_url="http://localhost:4000/api/v1"  # Optional; defaults to localhost in dev
+)
+
+# 2. Log an AI decision
+decision = client.log_decision(
+    decision="approved",
+    input_data={
+        "credit_score": 750,
+        "monthly_income": 9500,
+        "existing_debt": 1200
+    },
+    output={
+        "approved_limit": 25000,
+        "tier": "preferred_platinum"
+    },
+    metadata={
+        "application_id": "APP-8421",
+        "jurisdiction": "EU-DE"
+    },
+    risk_level="LOW"
+)
+
+print(f"Secured Event ID: {decision.event_id}")
+print(f"Status: {decision.verification_status}")
+
+# 3. Cryptographically verify the receipt offline across 7 trust domains
+verdict = client.verify(decision.event_id)
+print(f"Cryptographically Verified: {verdict.ok}")
+```
+
+---
+
+## Features
+
+- **Zero-Knowledge Privacy**: Customer PII is salted and hashed client-side before submission.
+- **Fail-Safe Execution**: If the attestation network is unreachable, your AI agent continues without crashing or stalling.
+- **Offline Independent Re-Verification**: 7 trust domains (Key Binding, Ed25519 Signatures, Merkle Tree Inclusion, TEE Enclave Attestation, Witness Quorums).
+- **Zero Heavy Dependencies**: Uses standard Python 3.8+ library.
