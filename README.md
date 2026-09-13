@@ -1,6 +1,6 @@
 # VeritasAI
 
-Cryptographic evidence and governance infrastructure for autonomous, consequential AI agent systems, powered by the Northwind Cipher CooL SDK (`cool-nwc`).
+Cryptographic evidence and governance infrastructure for autonomous, consequential AI agent systems,powered by the Northwind Cipher CooL SDK (`cool-nwc`).
 
 ---
 
