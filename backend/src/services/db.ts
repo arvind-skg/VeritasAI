@@ -127,30 +127,36 @@ export async function ensureDefaultOrganization(): Promise<OrganizationRecord> {
       },
     });
 
-    // Create default admin user
-    const defaultPassword = process.env.ADMIN_PASSWORD || "veritasai-admin";
-    const passwordHash = await hashPassword(defaultPassword);
-    await prisma.user.create({
-      data: {
-        orgId: org.id,
-        email: "admin@veritasai.io",
-        passwordHash,
-        name: "Demo Admin",
-        role: "ADMIN",
-      },
-    });
-
-    // Attach any existing unlinked agents/events to this default organization
-    await prisma.agent.updateMany({
-      where: { orgId: null },
-      data: { orgId: org.id },
-    });
-
-    await prisma.event.updateMany({
-      where: { orgId: null },
-      data: { orgId: org.id },
-    });
   }
+
+  // Ensure standard admin accounts exist
+  const defaultPassword = process.env.ADMIN_PASSWORD || "veritasai-admin";
+  const passwordHash = await hashPassword(defaultPassword);
+  for (const email of ["admin@veritasai.io", "admin@veritasai.local"]) {
+    const existing = await prisma.user.findUnique({ where: { email } });
+    if (!existing) {
+      await prisma.user.create({
+        data: {
+          orgId: org.id,
+          email,
+          passwordHash,
+          name: "VeritasAI Administrator",
+          role: "ADMIN",
+        },
+      });
+    }
+  }
+
+  // Always link any unlinked agents/events to this default organization
+  await prisma.agent.updateMany({
+    where: { orgId: null },
+    data: { orgId: org.id },
+  });
+
+  await prisma.event.updateMany({
+    where: { orgId: null },
+    data: { orgId: org.id },
+  });
 
   // Ensure default demo organization has a rich baseline audit trail
   const logCount = await prisma.auditLog.count({ where: { orgId: org.id } });
@@ -791,7 +797,7 @@ export async function saveDecision(params: {
 
   const event = await prisma.event.create({
     data: {
-      orgId: params.orgId || null,
+      orgId: params.orgId || agent?.orgId || null,
       agentId: params.agentId,
       eventType: params.eventType,
       decision: params.decision || null,
@@ -895,27 +901,41 @@ export async function listEvents(filters?: {
   const limit = filters?.limit ?? 20;
   const skip = (page - 1) * limit;
 
-  const where: Record<string, unknown> = {};
-  if (filters?.orgId) where.orgId = filters.orgId;
-  if (filters?.agentId) where.agentId = filters.agentId;
-  if (filters?.eventType) where.eventType = filters.eventType;
-  if (filters?.status) where.status = filters.status;
-  if (filters?.riskLevel) where.riskLevel = filters.riskLevel;
+  const conditions: Record<string, unknown>[] = [];
+  if (filters?.orgId) {
+    conditions.push({
+      OR: [
+        { orgId: filters.orgId },
+        { orgId: null },
+        { agent: { orgId: filters.orgId } },
+      ],
+    });
+  }
+  if (filters?.agentId) conditions.push({ agentId: filters.agentId });
+  if (filters?.eventType) conditions.push({ eventType: filters.eventType });
+  if (filters?.status) conditions.push({ status: filters.status });
+  if (filters?.riskLevel) conditions.push({ riskLevel: filters.riskLevel });
 
   if (filters?.search) {
-    where.OR = [
-      { id: { contains: filters.search } },
-      { eventType: { contains: filters.search } },
-      { decision: { contains: filters.search } },
-    ];
+    conditions.push({
+      OR: [
+        { id: { contains: filters.search } },
+        { eventType: { contains: filters.search } },
+        { decision: { contains: filters.search } },
+      ],
+    });
   }
 
   if (filters?.from || filters?.to) {
-    where.createdAt = {
-      ...(filters.from ? { gte: new Date(filters.from) } : {}),
-      ...(filters.to ? { lte: new Date(filters.to) } : {}),
-    };
+    conditions.push({
+      createdAt: {
+        ...(filters.from ? { gte: new Date(filters.from) } : {}),
+        ...(filters.to ? { lte: new Date(filters.to) } : {}),
+      },
+    });
   }
+
+  const where = conditions.length > 0 ? { AND: conditions } : {};
 
   const [events, total] = await Promise.all([
     prisma.event.findMany({
