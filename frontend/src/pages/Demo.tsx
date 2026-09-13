@@ -45,14 +45,14 @@ export default function Demo() {
 
   return (
     <div className="max-w-4xl mx-auto py-8 px-4 animate-fade-in">
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900 mb-1">Demo Simulation</h1>
           <p className="text-slate-500 text-sm">
             Simulate an AI agent processing customer requests and recording cryptographic evidence.
           </p>
         </div>
-        <Link to="/" className="btn-secondary text-xs flex items-center gap-1.5">
+        <Link to="/" className="btn-secondary text-xs flex items-center justify-center gap-1.5 w-full sm:w-auto shrink-0">
           <span>📊</span> View Live Feed
         </Link>
       </div>

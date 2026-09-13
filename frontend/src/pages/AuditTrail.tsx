@@ -144,11 +144,11 @@ export default function AuditTrail() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2.5 w-full sm:w-auto">
           <button
             onClick={exportAuditLogs}
             disabled={filteredLogs.length === 0}
-            className="btn-secondary text-xs flex items-center gap-1.5"
+            className="btn-secondary text-xs flex items-center justify-center gap-1.5 flex-1 sm:flex-initial"
             title="Export filtered audit logs as JSON for external compliance review"
           >
             <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -159,7 +159,7 @@ export default function AuditTrail() {
           <button
             onClick={loadLogs}
             disabled={loading}
-            className="btn-secondary text-xs flex items-center gap-1.5"
+            className="btn-secondary text-xs flex items-center justify-center gap-1.5 flex-1 sm:flex-initial"
           >
             <svg className={`w-4 h-4 text-slate-500 ${loading ? "animate-spin" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -170,7 +170,7 @@ export default function AuditTrail() {
       </div>
 
       {/* Metric Cards / KPIs */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
         <div className="glass-card p-4">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Events</span>
@@ -442,8 +442,8 @@ export default function AuditTrail() {
 
       {/* Detail Inspection Modal */}
       {selectedLog && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4 animate-fade-in">
-          <div className="glass-card max-w-2xl w-full p-6 space-y-4 shadow-xl border-slate-300">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-3 sm:p-4 animate-fade-in">
+          <div className="glass-card max-w-2xl w-full p-4 sm:p-6 space-y-4 shadow-xl border-slate-300 max-h-[90vh] overflow-y-auto">
             <div className="flex items-start justify-between">
               <div>
                 <div className="flex items-center gap-2">
@@ -455,7 +455,7 @@ export default function AuditTrail() {
                   </span>
                 </div>
                 <h2 className="text-base font-bold text-slate-900 mt-2">Audit Event Record</h2>
-                <p className="text-xs text-slate-500 font-mono">ID: {selectedLog.id}</p>
+                <p className="text-xs text-slate-500 font-mono break-all">ID: {selectedLog.id}</p>
               </div>
               <button
                 onClick={() => setSelectedLog(null)}
@@ -468,7 +468,7 @@ export default function AuditTrail() {
             </div>
 
             {/* Metadata Grid */}
-            <div className="grid grid-cols-2 gap-3 bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-xs">
               <div>
                 <span className="text-[11px] font-semibold text-slate-400 uppercase">Timestamp</span>
                 <p className="font-mono text-slate-800 mt-0.5">{new Date(selectedLog.createdAt).toISOString()}</p>

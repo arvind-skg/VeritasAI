@@ -144,9 +144,9 @@ export default function Playground() {
 
       {/* Attack Runner Panel */}
       <div className="bg-slate-900 text-white rounded-2xl p-6 shadow-xl border border-slate-800 space-y-6">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
           <div>
-            <span className="text-xs font-mono text-rose-400 font-bold uppercase tracking-wider">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-rose-400 font-mono">
               2. Launch Tamper Simulation
             </span>
             <h3 className="text-lg font-bold text-white mt-0.5">
@@ -160,7 +160,7 @@ export default function Playground() {
           <button
             onClick={handleExecuteAttack}
             disabled={attacking}
-            className={`px-6 py-3 rounded-xl font-bold text-xs tracking-wider uppercase transition-all shadow-lg flex items-center justify-center gap-2 ${
+            className={`w-full sm:w-auto px-6 py-3 rounded-xl font-bold text-xs tracking-wider uppercase transition-all shadow-lg flex items-center justify-center gap-2 shrink-0 ${
               attacking
                 ? "bg-rose-900/60 text-rose-300 cursor-not-allowed"
                 : "bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 text-white shadow-rose-950/50 hover:shadow-rose-900/80 active:scale-95"
@@ -190,7 +190,7 @@ export default function Playground() {
           <div className="space-y-4 animate-fade-in">
             {/* Verdict Banner */}
             <div
-              className={`p-4 rounded-xl flex items-center justify-between border ${
+              className={`p-4 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 border ${
                 attackResult.attackDetected
                   ? "bg-emerald-950/40 border-emerald-500/50 text-emerald-200"
                   : "bg-rose-950/40 border-rose-500/50 text-rose-200"
@@ -198,7 +198,7 @@ export default function Playground() {
             >
               <div className="flex items-center gap-3">
                 <div
-                  className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg ${
+                  className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg shrink-0 ${
                     attackResult.attackDetected
                       ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40"
                       : "bg-rose-500/20 text-rose-400 border border-rose-500/40"
@@ -219,7 +219,7 @@ export default function Playground() {
                   </p>
                 </div>
               </div>
-              <span className="text-[11px] font-mono px-3 py-1 rounded-full bg-slate-900 border border-slate-700">
+              <span className="text-[11px] font-mono px-3 py-1 rounded-full bg-slate-900 border border-slate-700 self-start sm:self-center shrink-0">
                 Status: {attackResult.verdict}
               </span>
             </div>

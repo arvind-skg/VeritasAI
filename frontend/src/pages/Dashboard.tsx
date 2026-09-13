@@ -96,10 +96,10 @@ export default function Dashboard() {
         </div>
 
         {/* Header Action Toolbar */}
-        <div className="flex items-center gap-2.5 shrink-0">
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto shrink-0">
           <button
             onClick={handleExportJson}
-            className="btn-secondary text-xs py-1.5 px-3 flex items-center gap-1.5"
+            className="btn-secondary text-xs py-1.5 px-3 flex items-center gap-1.5 flex-1 sm:flex-initial justify-center"
             title="Export full filtered decisions as JSON for compliance audits"
           >
             <svg className="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -110,14 +110,14 @@ export default function Dashboard() {
 
           <Link
             to="/demo"
-            className="btn-secondary text-xs py-1.5 px-3 flex items-center gap-1.5"
+            className="btn-secondary text-xs py-1.5 px-3 flex items-center gap-1.5 flex-1 sm:flex-initial justify-center"
           >
             <span>⚡</span> Simulate Activity
           </Link>
 
           <button
             onClick={handleRefresh}
-            className="btn-primary text-xs py-1.5 px-3 flex items-center gap-1.5"
+            className="btn-primary text-xs py-1.5 px-3 flex items-center gap-1.5 flex-1 sm:flex-initial justify-center"
           >
             <svg
               className={`w-3.5 h-3.5 ${refreshing ? "animate-spin" : ""}`}
@@ -134,7 +134,7 @@ export default function Dashboard() {
 
       {/* Executive Metric Cards */}
       {stats && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4">
           <div className="glass-card p-4.5 border-t-2 border-t-indigo-600">
             <div className="flex items-center justify-between mb-1">
               <p className="text-[11px] uppercase tracking-wider font-semibold text-slate-500">Active AI Agents</p>
@@ -205,7 +205,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
           <div className="flex items-center gap-2">
             <span className="w-5 h-5 rounded-md bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-[10px]">
               9-STG
@@ -249,8 +249,8 @@ export default function Dashboard() {
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="glass-card p-3 flex flex-wrap gap-2.5 items-center justify-between border-slate-200/80">
-        <div className="flex items-center gap-2.5 flex-1 min-w-[260px]">
+      <div className="glass-card p-3 flex flex-col md:flex-row gap-2.5 items-stretch md:items-center justify-between border-slate-200/80">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 flex-1 min-w-[200px]">
           {/* Search Input */}
           <div className="relative flex-1">
             <svg
@@ -271,7 +271,7 @@ export default function Dashboard() {
           </div>
 
           {/* Quick Status Filters */}
-          <div className="hidden lg:flex items-center gap-1 bg-slate-100 p-1 rounded-lg border border-slate-200 text-xs">
+          <div className="flex items-center justify-center gap-1 bg-slate-100 p-1 rounded-lg border border-slate-200 text-xs">
             <button
               onClick={() => setSelectedStatus("")}
               className={`px-2.5 py-1 rounded-md font-medium transition-all ${
@@ -300,11 +300,11 @@ export default function Dashboard() {
         </div>
 
         {/* Dropdown Filters */}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
           <select
             value={selectedAgent}
             onChange={(e) => setSelectedAgent(e.target.value)}
-            className="text-xs py-2 px-3 bg-white border border-slate-300 text-slate-800 rounded-lg focus:border-slate-900"
+            className="text-xs py-2 px-3 bg-white border border-slate-300 text-slate-800 rounded-lg focus:border-slate-900 flex-1 sm:flex-initial"
           >
             <option value="">All AI Agents</option>
             {agents.map((a) => (
@@ -315,7 +315,7 @@ export default function Dashboard() {
           <select
             value={selectedRisk}
             onChange={(e) => setSelectedRisk(e.target.value)}
-            className="text-xs py-2 px-3 bg-white border border-slate-300 text-slate-800 rounded-lg focus:border-slate-900"
+            className="text-xs py-2 px-3 bg-white border border-slate-300 text-slate-800 rounded-lg focus:border-slate-900 flex-1 sm:flex-initial"
           >
             <option value="">All Risk Levels</option>
             <option value="LOW">Low Risk</option>

@@ -267,7 +267,7 @@ export default function EventDetail() {
               </div>
 
               {/* Action Chain Horizontal Stepper */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pt-1">
                 {(event.actionChain ?? []).map((stg, i) => (
                   <div
                     key={i}
@@ -533,11 +533,11 @@ export default function EventDetail() {
 
       {/* Interactive Selective Disclosure Modal */}
       {showSelectiveModal && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fade-in">
-          <div className="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-slate-200 space-y-5">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center z-50 p-2 sm:p-4 animate-fade-in">
+          <div className="bg-white rounded-2xl max-w-xl w-full p-4 sm:p-6 max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-200 space-y-4 sm:space-y-5">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
-                <h3 className="font-bold text-slate-900 text-base flex items-center gap-2">
+                <h3 className="font-bold text-slate-900 text-sm sm:text-base flex items-center gap-2">
                   <span>🔐</span> Selective Disclosure Generator
                 </h3>
                 <p className="text-xs text-slate-500 mt-0.5">
@@ -550,7 +550,7 @@ export default function EventDetail() {
                   setSelectiveProof(null);
                   setSelectiveVerdict(null);
                 }}
-                className="w-7 h-7 rounded-full bg-slate-100 text-slate-500 hover:text-slate-800 flex items-center justify-center text-sm font-bold"
+                className="w-7 h-7 rounded-full bg-slate-100 text-slate-500 hover:text-slate-800 flex items-center justify-center text-sm font-bold shrink-0 ml-2"
               >
                 ✕
               </button>
@@ -561,7 +561,7 @@ export default function EventDetail() {
               <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">
                 Choose Fields to Disclose:
               </label>
-              <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto p-1">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto p-1">
                 {Object.keys((event.inputJson as Record<string, any>) || {}).map((field) => {
                   const isChecked = selectedFields.includes(field);
                   return (
@@ -593,7 +593,7 @@ export default function EventDetail() {
             </div>
 
             {/* Modal Actions */}
-            <div className="flex items-center justify-between pt-2">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
               <span className="text-xs text-slate-500 font-medium">
                 {selectedFields.length} field(s) selected for disclosure
               </span>
@@ -601,7 +601,7 @@ export default function EventDetail() {
                 <button
                   onClick={handleGenerateSelectiveProof}
                   disabled={generatingProof || selectedFields.length === 0}
-                  className="btn-primary text-xs py-2 px-4"
+                  className="btn-primary text-xs py-2 px-4 w-full sm:w-auto text-center"
                 >
                   {generatingProof ? "Generating..." : "Generate Cryptographic Proof"}
                 </button>

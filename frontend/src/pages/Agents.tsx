@@ -204,16 +204,16 @@ export default function Agents() {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between gap-3 pt-3 border-t border-slate-100">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pt-3 border-t border-slate-100">
                 <button
                   onClick={() => openCredentials(agent)}
-                  className="btn-secondary text-xs py-1.5 px-3 flex items-center gap-1.5"
+                  className="btn-secondary text-xs py-1.5 px-3 flex items-center justify-center gap-1.5 w-full sm:w-auto"
                 >
                   <span>🔑</span> Manage Credentials
                 </button>
                 <button
                   onClick={() => toggleStatus(agent)}
-                  className={`text-xs font-medium px-3 py-1.5 rounded transition-colors ${
+                  className={`text-xs font-medium px-3 py-1.5 rounded transition-colors text-center w-full sm:w-auto ${
                     agent.status === "ACTIVE"
                       ? "text-rose-600 hover:bg-rose-50"
                       : "text-emerald-700 hover:bg-emerald-50"
@@ -229,8 +229,8 @@ export default function Agents() {
 
       {/* NEW KEY MODAL (Show ONCE) */}
       {createdKey && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-lg w-full p-6 border border-slate-200 animate-fade-in">
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-lg w-full p-4 sm:p-6 border border-slate-200 animate-fade-in max-h-[90vh] overflow-y-auto">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-lg">
                 ✓
@@ -268,8 +268,8 @@ client = VeritasAI(api_key="${createdKey}")`}
 
       {/* CREATE AGENT MODAL */}
       {showCreateModal && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6 border border-slate-200 animate-fade-in">
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-4 sm:p-6 border border-slate-200 animate-fade-in max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-bold text-slate-900 mb-4">Register New AI Agent</h3>
             <form onSubmit={handleCreate} className="space-y-4">
               <div>
@@ -299,7 +299,7 @@ client = VeritasAI(api_key="${createdKey}")`}
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
                     Use Case Type
@@ -354,8 +354,8 @@ client = VeritasAI(api_key="${createdKey}")`}
 
       {/* MANAGE CREDENTIALS MODAL */}
       {selectedAgent && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full p-6 border border-slate-200 animate-fade-in max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full p-4 sm:p-6 border border-slate-200 animate-fade-in max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
@@ -393,7 +393,7 @@ client = VeritasAI(api_key="${createdKey}")`}
                 {credentials.map((cred) => (
                   <div
                     key={cred.id}
-                    className="p-3 bg-slate-50 rounded-lg border border-slate-200/70 flex items-center justify-between gap-4"
+                    className="p-3 bg-slate-50 rounded-lg border border-slate-200/70 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
                   >
                     <div>
                       <div className="flex items-center gap-2 mb-1">
@@ -415,7 +415,7 @@ client = VeritasAI(api_key="${createdKey}")`}
                     </div>
 
                     {cred.status === "ACTIVE" && (
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 self-end sm:self-auto">
                         <button
                           onClick={() => handleRotate(cred.id)}
                           className="text-xs px-2.5 py-1 rounded bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200 transition-colors"
