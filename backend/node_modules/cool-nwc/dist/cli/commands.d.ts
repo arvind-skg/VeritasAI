@@ -1,0 +1,12 @@
+import type { ReceiptV2, VerdictV2 } from "../phala/index.js";
+import { type Workspace } from "./workspace.js";
+export declare const VERSION: string;
+export declare function banner(workspace: Workspace | null): void;
+export declare function statusPanel(workspace: Workspace): void;
+export declare function seal(workspace: Workspace, args: string[]): Promise<ReceiptV2 | null>;
+export declare function printVerdict(verdict: VerdictV2, subject: string): void;
+export declare function verifyCommand(workspace: Workspace | null, args: string[]): Promise<number>;
+export declare function stats(workspace: Workspace | null): Promise<void>;
+export declare function attest(workspace: Workspace): void;
+export declare function exportPack(workspace: Workspace, args: string[]): Promise<void>;
+export declare function doctor(workspace: Workspace | null): Promise<number>;
