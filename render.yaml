@@ -1,3 +1,9 @@
+databases:
+  - name: veritasai-db
+    databaseName: veritasai
+    user: veritasai_user
+    plan: free
+
 services:
   - type: web
     name: veritasai-backend
@@ -12,7 +18,9 @@ services:
       - key: PORT
         value: 10000
       - key: DATABASE_URL
-        value: file:./dev.db
+        fromDatabase:
+          name: veritasai-db
+          property: connectionString
       - key: JWT_SECRET
         generateValue: true
       - key: ADMIN_PASSWORD

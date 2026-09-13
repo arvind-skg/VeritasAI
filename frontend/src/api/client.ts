@@ -2,7 +2,8 @@
  * VeritasAI API Client — Typed Fetch Wrapper for SaaS Platform
  */
 
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:4000/api/v1";
+const rawUrl = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\/+$/, "");
+const API_BASE = rawUrl.endsWith("/api/v1") ? rawUrl : `${rawUrl}/api/v1`;
 
 export interface User {
   id: string;
