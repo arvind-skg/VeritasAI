@@ -10,7 +10,7 @@ services:
     runtime: node
     plan: free
     rootDir: backend
-    buildCommand: npm install && npx prisma db push && npm run build
+    buildCommand: npm install && (chmod -R +x node_modules/.bin 2>/dev/null || true) && npx prisma generate && npx prisma db push && npx tsc
     startCommand: npm run start
     envVars:
       - key: NODE_VERSION

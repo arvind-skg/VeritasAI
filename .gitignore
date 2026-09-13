@@ -1,0 +1,20 @@
+# Dependencies
+node_modules/
+backend/node_modules/
+frontend/node_modules/
+
+# Production builds
+dist/
+backend/dist/
+frontend/dist/
+
+# SQLite local databases & logs
+*.db
+*.db-journal
+backend/prisma/*.db
+backend/prisma/*.db-journal
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
